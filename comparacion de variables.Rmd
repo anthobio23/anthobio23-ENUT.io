@@ -1,0 +1,60 @@
+---
+title: "Untitled"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(readr)
+library(dplyr)
+datasets_w <- read.csv2("/trabajo de estadistica/capitulo h uso del tiempo/capitulo h1.csv")
+df_w <- datasets_w %>%
+  select(P6880, P1151, P1099S1, P427, P6500, P6545B, P6545BS1)
+df_w <- na.omit(df_w)
+df_w <- df_w %>%
+  mutate(P6500 = P6500/1000000) %>%
+  mutate(P6545BS1 = P6545BS1/1000)
+head(df_w)
+```
+
+
+Relacion entre las varaibles:
+  ¿cuantas horas de trabajo cumplen a la semana las personas que trabajan desde la oficina?
+  
+```{r}
+df_w %>%
+  filter(P6880 == 7) %>%
+  select(P1151) %>%
+  summarize(mean(P1151))
+```
+
+¿que tipo de trabajo tienen estas personas que trabajan en oficina?
+```{r}
+df_w %>%
+  filter(P6880 == 7) %>%
+  select(P427) %>%
+  summarize(mean(P427)) %>%
+  round(digits = 0)
+```
+las personas que tabajan desdes la oficina son empleados de empresas regular.
+
+¿Cuanto ganan en promedio (pesos Colombianos) las personas que trabajan desde la oficina?
+```{r}
+df_w %>%
+  filter(P6880 == 7) %>%
+  select(P6500,P427) %>%
+  summarize(mean(P6500) * 1000000)
+```
+
+¿cuanto reciben estas personas de subsidio (pesos colombianos) para transporte?
+```{r}
+df_w %>%
+  filter(P6880 == 7) %>%
+  select(P6545BS1, P427) %>%
+  summarize(mean(P6545BS1) * 1000)
+  
+```
+

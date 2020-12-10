@@ -1,0 +1,102 @@
+---
+title: "Untitled"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(readr)
+library(tidyverse)
+library(skimr)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(fdth)
+library(hrbrthemes)
+```
+
+
+1.- Conocimiento del problema.
+  Los datos generados a continuación, provienen de una base de datos en la que se realizaron encuentas en Colombia.
+  los microdatos y metadatos pueden encontrarse en el siguiente link: http://microdatos.dane.gov.co/index.php/catalog/552/study-description
+  
+```{r}
+datasets <- read.csv2("/trabajo de estadistica/CAPITULO I/CAPITULO I.csv")
+head(datasets)
+```
+Descripción de las variables:
+  con respecto a la variable de escogéncia, P1144S1 la cual contiene información sobre si los indivíduos usan el tiempo para dormir en siestas y demás.
+  Esta variable se corrésponden con otras 2 las cuales contienen el total de horas usadas para dormír (P1144S1A1).
+  Esta encuesta se llevó a cabo para la población civíl, no institucional con edades iguales o mayores a 10 años.
+  
+2.- Conocimiento de los datos.
+```{r}
+df <- datasets %>%
+  select(P1144S1, P1140S1A1) %>%
+  summarize(glimpse(datasets[, 4:5]))
+```
+podemos observar que exísten un tipeo de variables correcto, en este caso las tres variables seleccionadas son del tipo entero
+tambien encontramos una cantidad considerable de valores NA lo cual, puede provocar distorción en nuestros análisis.
+
+```{r}
+skim(df)
+```
+como pueden verse, existe una gran cantidad de valores perdidos (NA) en las 3 variables. 
+Esto provoca disturbio en nuestros análisis; por lo tanto deben ser corregidos. 
+pues lo mismo, representan complicaciones sobre el analisis.
+
+Por otro lado, tenemos un promedio de 8.21 horas consumidas en dormir por parte de los individuos. un 25% de estos individuos consumen 7 horas al día de sueño, 
+un 50% consume 8 horas, hasta un 75% consumen 9 horas en sueño.
+
+2.- límpieza y corrección de datos
+```{r}
+## Eliminar los datos perdidos
+df <- na.omit(df)
+
+## revisamos 
+skim(df)
+```
+Los datos faltantes fuerón eliminados, y como puede apreciarse no hay nínguna 
+modificación en cuanto a sus resultados anteriores, con respecto a la media,
+desviación y sus percéntiles.
+
+
+3.- Representación en gráfico de cajas.
+```{r}
+ggplot(df, aes(y = P1144S1A1)) +
+  geom_boxplot() +
+  ggtitle("Gráfico de caja de la variable horas de sueño diarias")
+```
+como puede observarse en el gráfico, el promedio se encuentra cercano a 9 horas de sueños, consumidos por las personas según la muestra del senso.
+también pueden observarse valores outliers, que índican valores extremos; con esto nos referímos a: mayor cantidad de sueños consumídos por las personas, 
+esto a partir de alrededor de 12 horas en adelánte.
+
+4.- Estadística descríptiva: tablas de frecuéncias.
+```{r}
+tab_freq <- fdt(df[, 2], breaks = "Sturges")
+tab_freq
+
+```
+
+la tabla de frecuencia muestra los siguientes resultados:
+  alrededor del 88% de las personas duermen entre 5 a 10 horas, esto se observa gracias a que la mayor concentración de los datos.
+  se encuentra entre la clase 6 y 9 de la variable P1144S1A1 la cual mide el tiempo ede sueño en horas. en pocas palabras esto se traduce en: 109670 individuos que duermen esta cantidad de horas.
+  
+  Por otro lado, solo un 4% de las personas duermen entre 3.3 a 5.6 horas diarias, procentaje que se encuentra entre la clase 4 y 5. asi mismo,
+  solo un 7% de la poblacion se duerme alrededor de 10 13.47 horas diarias
+  
+5.- Representación gráfica
+```{r}
+ggplot(df, aes(x = P1144S1A1)) + 
+  geom_histogram(bins = 30, fill = "#69b3a2", color = "#e9ecef") +
+  ggtitle("Histograma de frecuencia absoluta de la variable horas de sueño")
+```
+la representacion grafica de la variable horas de sueño (P1144S1A1) muestra similitud con la tabla de frecuencias calculda, 
+pues muestra una gran cantidad de datos alojados entre 7 y 9 horas, como ya se habia mencionado anteriormente.

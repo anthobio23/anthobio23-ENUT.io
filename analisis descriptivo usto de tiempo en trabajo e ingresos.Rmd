@@ -1,0 +1,177 @@
+---
+title: "Untitled"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+1.- Entendimiento de la nueva base de datos.
+  para este caso, importaremos el capitulo H. Fuerza de trabajo - uso del tiempo e ingresos
+```{r message=FALSE, warning=FALSE, include=FALSE, paged.print=FALSE}
+library(readr)
+library(tidyverse)
+library(skimr)
+library(dplyr)
+library(lubridate)
+library(tidyr)
+library(ggplot2)
+library(fdth)
+library(hrbrthemes)
+
+```
+
+```{r}
+datasets_w <- read.csv2("/trabajo de estadistica/capitulo h uso del tiempo/capitulo h1.csv")
+head(datasets_w)
+```
+
+
+5.- seleccion de variables de trabajo para relacionar en el uso del tiempo en el trabajo (capitulo H):
+  se han seleccionado por medio de la instrucciones dadas, 7 variables las cuales contienen.
+    P6880 (tipo de medida discreta (describe una variable cualitativa)): ¿Donde realiza su trabajo?
+        1 En esta vivienda
+        2 En otras viviendas
+        3 En kiosco - caseta
+        4 En un vehículo
+        5 De puerta en puerta
+        6 Sitio al descubierto en la calle (ambulante y estacionario)
+        7 Local fijo, oficina, fábrica, etc.
+        8 En el campo o área rural, mar o río
+        9 En una obra en construcción
+        10 En una mina o cantera
+        11 Otro, ¿cuál?____)
+  P1151 (tipo cuantitativa aleatoria continua): Cuantas horas a la semana trabaja.
+  P1099S1 (tipo cuantitativa discreta): Horas gastadas para ir al sitio de trabajo.
+  P427 (tipo discreto (describe una variable cualitativa)): Clase de trabajo
+          1 Obrero o empleado de empresa particular
+          2 Obrero o empleado del gobierno
+          3 Empleado doméstico
+          4 Jornalero o Peón
+          5 Trabajador por cuenta propia (Pase a 30)
+          6 Patrón o empleador (Pase a 30)
+          7 Trabajador de su propia finca o de finca en arriendo o aparcería. (Pase a 30)
+          8 Trabajador familiar sin remuneración (Pase a 34)
+          9 Trabajador sin remuneración en empresas o negocios de otros hogares. (Pase a 34)
+
+  P6500 (tipo cuantitativa discreta): Antes del descuento, ¿cuanto gano... el mes pasado en este empleo?
+  P6545B (type de variable discreta numerica (describe uan variable cualitativa): subsidio de transporte
+    P6545BS1 (tipo cuantitativa aleatoria continua): Cuanto recibe de subsiidio por el transporte en su trabajo.
+
+2.- Comprension de los datos  
+```{r}
+df_w <- datasets_w %>%
+  select(P6880, P1151, P1099S1, P427, P6500, P6545B, P6545BS1)
+glimpse(df_w)
+```
+en observación con estas variables, encontramos que todas correponden al tipo de variable que se mencionan en los metadatos.
+por otro lado hay una cantidad considerable de valores perdidos, lo que dificulta los analisis sobre estas variables.
+
+
+```{r}
+skim(df_w)
+```
+
+3.- Limpieza de datos:
+```{r}
+## Depuracion de los datos 
+df_w <- na.omit(df_w)
+
+##  Transformacion de las variables P6500 Y P6545BS1, la cuales corresponden a los pagos del mes pasado correspondiente a este periodo, 
+##  y el dinero recibido por subsidio de  transporte respectivamente.
+## la variable P650 en millones de pesos y P645BS1 en miles de pesos
+df_w <- df_w %>%
+  mutate(P6500 = P6500/1000000) %>%
+  mutate(P6545BS1 = P6545BS1/1000)
+head(df_w)
+
+
+skim(df_w)
+```
+Los valores de la media correspondientes a la variable P6500 vemos un valor de 876608 pesos colombianos que ganó una persona el mes pasado
+de haberse realizado esta encuesta. 
+
+tambien es notable que existe un promedio de personas que trabajan e oficinas o local comerciales..
+
+en promedio las personas en colombia gastan 51.2 horas de trabajo a la semana.
+
+estas personas gastan en promedio 0.379 horas en ir al trabajo.
+
+50% de la poblacion en estudio son trabajadors son empleado de empresas particulares
+
+en promedio todos reciben subsidio de transporte y estos mismos reciben un total de 73805 pesos colombianos por mes como subsidio para el transporte.
+
+4.- representacion grafica por grafico de cajas
+```{r, echo=FALSE}
+df_w %>%
+  select(P6880, P1151, P1099S1, P427, P6500, P6545B, P6545BS1) %>%
+  gather() %>%
+  ggplot(aes(y = value)) + 
+  geom_boxplot() + 
+  facet_wrap(~key, scales = "free") + 
+  theme(axis.text = element_text(size = 10)) + 
+  ggtitle("Gráfico de caja de la variables 'uso de horas de trabajos' del capitulo H")
+
+```
+
+como se muestra en los graficos de las 7 variables, poseen una gran cantidad de datos muy dispersos.
+
+5.- tabla de frecuencia
+```{r}
+tab_freq_w <- fdt(df_w, breaks = "Sturges")
+
+## analicemos la tabla de frecuencia de la variable P6880 (Donde realiza su trabajo)
+print(tab_freq_w$P6880)
+```
+
+puede puede observarse en la clase 9 existe un 80% de los individuos realizann sus trabajos desde zonas descubiertas (ambulantes) y desde la oficina.
+y solo un 3.7% de estos encuestados trabajan desde su viviendo u otra vivienda. un 5.3% trabajan desde el vehiculo (transporte).
+
+```{r}
+## analicemos la tabla de frecuencia de la variable P1151 (cuantas horas a la semana trabaja)
+print(tab_freq_w$P1151)
+```
+mayorente el 79.7% de los encuestados trabajan por semana desde 42.38 - 66 horas un equivalente de 8196 personas. 
+solo el 0.81% trabajan en un intervalo de 3 a 11 horas por semana, esto es un total de 84 encuestados.
+
+```{r}
+## analicemos la tabla de frecuencia de la variable P427 (trabajo)
+print(tab_freq_w$P427)
+```
+el 92.3% de los encuestados son empleados de empresas particulares.
+
+```{r}
+## analicemos la tabla de frecuencia de la variable P6545BS1 (dinero por subsidio de transporte)
+print(tab_freq_w$P6545BS1)
+```
+
+un 97.4% de los encuestados afirman que reciben un intervalo de 98.01 - 141491.5 pesos colombianos por subsidio de transporte, el resto de los encuestados aseguran que reciben 
+subsidios monetarios mayores a este.
+
+```{r}
+## analicemos la tabla de frecuencia de la variable P6500 (dinero recibidio el mes pasado en el periro de esta encuesta 2016 - 2017)
+print(tab_freq_w$P6500)
+```
+un 9323 de los encuestados gananron el mes pasado un rango de 1346758 - 2693419 pesos colombianos, lo que equivale al 98% de la muestra total.
+
+6.- Representacion grafica.
+```{r}
+df_w %>%
+  select(P6880, P1151, P1099S1, P427, P6500, P6545B, P6545BS1) %>%
+  gather() %>%
+  ggplot(aes(value)) + 
+  geom_histogram(bins = 30, fill = "#69b3a2", color = "#e9ecef") + 
+  facet_wrap(~key, scales = "free") + 
+  theme(axis.text = element_text(size = 10)) +
+  ggtitle("Histograma de frecuencia absoluta la variables 'uso de horas de trabajos' del capitulo H")
+```
+
+Exportacion de los datos de los datos df_w
+```{r}
+names(df_w) <- c("Lugar_t", "H_semana_t", "H_gastadas_t", "C_trabajo", "Ganancia_pre_desc", "Sub_transporte", "Dinero_sub")
+names(df_w)
+
+write.csv(df_w, file = "C:/Users/Anthony/Downloads/tarea en hws/BD_for analisis/capitulo h uso del tiempo/encuesta del uso del trabajo en horas.csv" )
+```
+
