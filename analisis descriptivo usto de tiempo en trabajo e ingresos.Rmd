@@ -1,5 +1,6 @@
 ---
-title: "Untitled"
+title: "Analisis descriptivos sobre el uso del tiempo en el trabajo en los Colombianos"
+autor: anthobio23
 output: word_document
 ---
 
