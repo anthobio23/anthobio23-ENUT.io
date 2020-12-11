@@ -1,5 +1,6 @@
 ---
-title: "Untitled"
+title: "Comparacion descriptiva sobre las variables del tiempo que ocupan las personas en trabajar y los ingresos segun sus empleos"
+autor: anthobio23
 output: word_document
 ---
 
